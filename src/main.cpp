@@ -206,6 +206,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     win = SDL_CreateWindow("FUCK RAYCASTING", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
     rndr = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
+    SDL_Log("Welcome to my world bitch\nDon't worry about this console window, its mainly for logging and debuging.\n-----------------------------------------\n");
+
     // the main loop
     while (true)
     {
