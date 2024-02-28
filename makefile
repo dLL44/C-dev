@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -std=c++11 -Wall -I./include
-LDFLAGS = -L./lib -lmingw32 -lSDL2main -lSDL2 -mconsole
+LDFLAGS = -L./lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -mconsole
 
 all: untiled
 

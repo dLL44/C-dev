@@ -1,13 +1,16 @@
 #include <windows.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <math.h>
 
-/* CONSTANTS */
+/* For main window*/
 const int WIDTH = 800, HEIGHT = 600;
 const int MAPW = 10, MAPH = 10;
 const int TILE_SIZE = 64;
 
+
+/* Map */
 int worldMap[MAPW][MAPH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -15,7 +18,7 @@ int worldMap[MAPW][MAPH] = {
     {1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
 SDL_Window *win;
@@ -28,6 +31,11 @@ double playerDirX = 1.0;
 double playerDirY = 0.0;
 double planeX = 0.0;
 double planeY = 0.66; // The 2D raycaster version of camera plane
+
+// info window for debuggin
+SDL_Window *infWin;
+SDL_Renderer *infRndr;
+TTF_Font *font = TTF_OpenFont("lazy.ttf", 24);  
 
 void drawColums(int x, int colH)
 {
@@ -49,7 +57,7 @@ void drawColums(int x, int colH)
 void updatePlayer()
 {
     // Calculate the speed of movement
-    double moveSpeed = 1.5;
+    double moveSpeed = 6.0;
    double rotSpeed = 0.05;
 
     // Update player controls
@@ -100,6 +108,31 @@ void updatePlayer()
         SDL_Log("PLAYER MOVEMENT: LEFT");
     }
 }
+
+// info render
+void renderInfo()
+{
+    SDL_SetRenderDrawColor(infRndr, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(infRndr);
+
+    // Render player information
+    char infoText[50];
+    sprintf(infoText, "Player Position: (%.2lf, %.2lf)\nLook Direction: (%.2lf, %.2lf)\nSpeed: %.2lf",
+            playerX, playerY, playerDirX, playerDirY, 6.0);
+    
+    SDL_Color textColor = {0, 0, 0, SDL_ALPHA_OPAQUE};
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, infoText, textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(infRndr, textSurface);
+
+    SDL_Rect textRect = {10, 10, textSurface->w, textSurface->h};
+    SDL_RenderCopy(infRndr, textTexture, NULL, &textRect);
+
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+
+    SDL_RenderPresent(infRndr);
+}
+
 
 // fuck me
 void render()
@@ -198,15 +231,31 @@ void render()
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     SDL_Init(SDL_INIT_EVERYTHING);
-
+    if (TTF_Init() < 0)
+    {
+        printf("SDL_ttf couldn't initalize! SDL_TTF_Error: %s", TTF_GetError());
+    }
     if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
     }
-    win = SDL_CreateWindow("FUCK RAYCASTING", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
+    win = SDL_CreateWindow("widow", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
     rndr = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
-
+    infWin = SDL_CreateWindow("debug window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
+    infRndr = SDL_CreateRenderer(infWin, -1, SDL_RENDERER_ACCELERATED);
     SDL_Log("Welcome to my world bitch\nDon't worry about this console window, its mainly for logging and debuging.\n-----------------------------------------\n");
+
+    
+    // Check for font loading errors if needed
+    if (!font || font==NULL ) 
+    {
+        if (font == NULL)
+        {
+            printf("Font is null\n");
+        }
+           fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
+        // Handle the error as needed
+    }
 
     // the main loop
     while (true)
@@ -218,12 +267,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
         updatePlayer();
         render();
+        renderInfo();
         SDL_Delay(10);
     }
 
     // cleanup our mess
     SDL_DestroyRenderer(rndr);
     SDL_DestroyWindow(win);
+    SDL_DestroyRenderer(infRndr);
+    SDL_DestroyWindow(infWin);
     SDL_Quit();
 
     return 0;
