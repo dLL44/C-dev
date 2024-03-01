@@ -5,7 +5,7 @@ LDFLAGS = -L./lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -mconsole
 all: untiled
 
 untiled: src/main.cpp
-	$(CC) $(CFLAGS) -o untiled src/main.cpp $(LDFLAGS)
+	$(CC) $(CFLAGS) -o bin/app src/main.cpp $(LDFLAGS)
 
 clean:
 	rm -f untiled
